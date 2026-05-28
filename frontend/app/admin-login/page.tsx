@@ -2,128 +2,94 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+
+const API_URL = "https://bharat-crm-backend.onrender.com";
 
 export default function AdminLogin() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@bharatcrm.com");
+  const [password, setPassword] = useState("admin123");
+  const [loading, setLoading] = useState(false);
 
   const loginAdmin = async (e: any) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      const res = await fetch(
-        "http://localhost:5000/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password.trim(),
+        }),
+      });
 
       const data = await res.json();
 
-      if (data.success) {
+      console.log("LOGIN RESPONSE:", data);
+
+      if (data.success && data.token) {
         localStorage.setItem("token", data.token);
-
-        alert("Login Successful");
-
         router.push("/dashboard");
       } else {
-        alert(data.message);
+        alert(data.message || "Login failed");
       }
     } catch (error) {
-      console.log(error);
-
-      alert("Login Failed");
+      console.log("LOGIN ERROR:", error);
+      alert("Backend connection failed");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f11] flex items-center justify-center overflow-hidden relative">
-
-      <motion.div
-        animate={{
-          x: [0, 120, 0],
-          y: [0, -80, 0],
-        }}
-        transition={{
-          repeat: Infinity,
-          duration: 10,
-        }}
-        className="absolute w-[450px] h-[450px] bg-orange-500/30 blur-[140px] rounded-full top-[-150px] left-[-100px]"
-      />
-
-      <motion.div
-        initial={{
-          opacity: 0,
-          scale: 0.9,
-          y: 40,
-        }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-          y: 0,
-        }}
-        className="w-[420px] bg-[#18181c] border border-orange-500/10 rounded-[40px] p-10 shadow-2xl relative z-10"
+    <div className="min-h-screen bg-[#fff7f0] flex items-center justify-center">
+      <form
+        onSubmit={loginAdmin}
+        className="bg-white w-[420px] p-8 rounded-[32px] shadow-2xl border border-orange-100"
       >
-
-        <p className="text-orange-500 text-sm tracking-[4px] font-black">
+        <p className="text-orange-500 font-black tracking-[4px] text-xs">
           BHARAT CRM
         </p>
 
-        <h1 className="text-5xl text-white font-black mt-4 leading-none">
+        <h1 className="text-5xl font-black mt-3 mb-3">
           Admin Login
         </h1>
 
-        <p className="text-zinc-500 mt-3 text-sm">
-          Premium Real Estate Dashboard Access
+        <p className="text-gray-500 mb-8 text-sm">
+          Login to manage all real estate leads.
         </p>
 
-        <form
-          onSubmit={loginAdmin}
-          className="mt-10 space-y-5"
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e: any) => setEmail(e.target.value)}
+          className="w-full border border-orange-100 bg-orange-50 p-4 rounded-2xl mb-4 outline-none"
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e: any) => setPassword(e.target.value)}
+          className="w-full border border-orange-100 bg-orange-50 p-4 rounded-2xl mb-6 outline-none"
+          required
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-orange-500 text-white p-4 rounded-2xl font-black"
         >
-
-          <input
-            type="email"
-            placeholder="Admin Email"
-            value={email}
-            onChange={(e: any) => setEmail(e.target.value)}
-            className="w-full bg-[#111114] border border-orange-500/10 rounded-2xl px-5 py-4 outline-none text-white"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e: any) => setPassword(e.target.value)}
-            className="w-full bg-[#111114] border border-orange-500/10 rounded-2xl px-5 py-4 outline-none text-white"
-          />
-
-          <motion.button
-            whileHover={{
-              scale: 1.03,
-            }}
-            whileTap={{
-              scale: 0.95,
-            }}
-            className="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-4 rounded-2xl font-black text-lg shadow-2xl"
-          >
-            Login
-          </motion.button>
-
-        </form>
-
-      </motion.div>
-
+          {loading ? "Logging in..." : "Login"}
+        </button>
+      </form>
     </div>
   );
 }
