@@ -1,17 +1,18 @@
 const Lead = require("../models/Lead");
-const sendLeadEmail = require("../services/emailService");
+// const sendLeadEmail = require("../services/emailService");
 
 const createLead = async (req, res) => {
   try {
     const lead = await Lead.create(req.body);
 
-    if (lead.email) {
-      await sendLeadEmail(lead);
-    }
+    // Email temporarily disabled for testing lead save
+    // if (lead.email) {
+    //   await sendLeadEmail(lead);
+    // }
 
     res.status(201).json({
       success: true,
-      message: "Lead created and email sent",
+      message: "Lead created successfully",
       data: lead,
     });
   } catch (error) {
